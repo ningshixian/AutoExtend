@@ -29,20 +29,24 @@ function [] = AutoExtend(varargin)
         weights = [sWeight lWeight rWeight 0];
         
     else
-        folder = '[...]';
+%         folder = 'F:\B910\AutoExtend-master\WordNetExtract\output\';
+%         folder =  'F:\B910\AutoExtend-master\geneExtract\extracted-mul\';
+        folder = 'E:\proteinInfoExtracter\extractedData\data2\'
         normalizeWeights = true;
-        sWeight = 0.20;
-        lWeight = 0.20;
-        rWeight = 0.60;
+        sWeight = 0.30;
+        lWeight = 0.50;
+        rWeight = 0.20;
         startNormalizedED = false;
         normWhenPossibleED = false;
         endWhenNotED = false;  
         experiment = 'naive';
-        RelationFiles = cell(4,1);
-        RelationFiles{1} = 'hypernym.txt';
-        RelationFiles{2} = 'verbGroup.txt';
-        RelationFiles{3} = 'similar.txt';
-        RelationFiles{4} = 'antonym.txt';
+        RelationFiles = cell(2,1); % 2x1的cell矩阵
+        RelationFiles{1} = 'similar.txt';
+        RelationFiles{2} = 'hypernym.txt';
+%         RelationFiles{1} = 'hypernym.txt';
+%         RelationFiles{2} = 'verbGroup.txt';
+%         RelationFiles{3} = 'similar.txt';
+%         RelationFiles{4} = 'antonym.txt';
         RelationFiles = [];
         
         settings = [startNormalizedED normWhenPossibleED endWhenNotED];
@@ -61,14 +65,18 @@ function [] = AutoExtend(varargin)
         return;
     end
     
+    fprintf('%s\n',strcat(folder, 'words.txt'));
     [W , ~] = loadTxtFile(strcat(folder, 'words.txt'));
-    dim = size(W,2); %dim = 1;    
+    dim = size(W,2); %dim = 1;  
     num_iters = 1000; %num_iters = 0;
+    fprintf('dim %f\n', dim);
     
     [DictS, DictSID] = loadSynsetFile(folder);
 
     countSynsets = length(DictSID);
     countWords = length(W);
+    fprintf('countSynsets %f\n', countSynsets);
+    fprintf('countWords %f\n', countWords);
     
     save(strcat(folder, experiment, '/settings.mat'), '-regexp', '^[^WD]');
     
@@ -77,13 +85,18 @@ function [] = AutoExtend(varargin)
     end
 
     Table = readtable(strcat(folder, 'lexemes.txt'), 'ReadVariableNames', false, 'Delimiter', ' ');
-    ThetaMap = table2array(Table(:, 1:2));
-    Iota = sparse(ThetaMap(:,1),ThetaMap(:,2),ones(size(ThetaMap,1),1),countWords,countSynsets);
-    Theta = Iota'; 
+    ThetaMap = table2array(Table(:, 1:2));    % 第一列+第二列
+    % fprintf('ThetaMap %f\n', ThetaMap(:,1));
+    % S = sparse(i,j,s,m,n,nzmax)  由i,j,s三个向量创建一个m*n的稀疏矩阵S,并且最多含有nzmax个非零元素
+    Iota = sparse(ThetaMap(:,1),ThetaMap(:,2),ones(size(ThetaMap,1),1),countWords,countSynsets);    % 数组越界
+    fprintf('ThetaMap(:,1) < countWords\n');
+    fprintf('ThetaMap(:,2) < countSynsets\n');
+    Theta = Iota';  % 加一撇是转置
 
     % create relation matrix - will do a squared error of relation pairs
     RelationMap = [];
     for i=1:size(RelationFiles, 1)
+        fprintf('RelationFiles %d.\n', i);
         Table = readtable(strcat(folder, RelationFiles{i}), 'ReadVariableNames', false, 'Delimiter', ' ');
         if isempty(Table)
             continue;
@@ -124,7 +137,8 @@ function [] = trainModel(folder, dim, num_iters, countSynsets, countWords, W, Th
     lastNormIter = 0;
 
     fprintf('Starting parallel computation on %d dimensions.\n', dim);
-    %poolobj = parpool('local',30);
+    %NaN：判断非数“0/0”、“∞/∞”、“0*∞”
+    %nnz：矩阵非零元素的数量
     ThetaValues = NaN(nnz(Theta),dim);
     IotaValues = NaN(nnz(Iota),dim);
  
@@ -183,6 +197,8 @@ function [] = trainModel(folder, dim, num_iters, countSynsets, countWords, W, Th
     end
     
     % if still not all values available
+    % isnan 判断变量是否是数字
+    % any：判断元素是否为非零元素
     if (any(isnan(ThetaValues(:))) || any(isnan(IotaValues(:))))
         fprintf('Not all values available (process not master). Process ended.\n');
         return;
@@ -203,6 +219,7 @@ function [] = trainModel(folder, dim, num_iters, countSynsets, countWords, W, Th
     mat1 = [word synset ThetaValues];
     fName = strcat(folder, experiment, '/theta.txt');
     dlmwrite(fName,mat1,'delimiter',' ','newline','pc','precision',6);
+    fprintf('写入theta.txt完成')
     
     % print iota matrix
     [word, synset, ~] = find(Iota);

@@ -1,11 +1,15 @@
 function [] = writeVectors(varargin)
     
-    folder = varargin{1};
-    experiment = varargin{2};
+%     folder = varargin{1};
+%     experiment = varargin{2};
+%     folder = 'C:\Users\Administrator\Desktop\AutoExtend-master\WordNetExtract\output_a\';
+%     folder =  'F:\B910\AutoExtend-master\geneExtract\extracted-mul\';
+    folder = 'E:\proteinInfoExtracter\extractedData\data2\'
+    experiment = 'naive\';
     
     writeWords = true;
     writeSynsets = true;
-    writeLexemes = false;
+    writeLexemes = true;    
     
     if (nargin == 5)   
         writeWords = varargin{3};
@@ -18,7 +22,30 @@ function [] = writeVectors(varargin)
     [W , dictW] = loadTxtFile(strcat(folder, 'words.txt'));
     [dictS, dictSID] = loadSynsetFile(folder);
     
-    Theta = importdata(strcat(folder, experiment, '/theta.txt'), ' ');
+    fileID = fopen(strcat(folder, experiment, '/theta.txt'));  
+    line = fgetl(fileID);       % fgetl从已经打开的文件中读取一行，并且丢掉末尾的换行符。
+    dim = length(strfind(line,' '));
+    fprintf('dim %f\n', dim);
+    
+    frewind(fileID);      %位置指针移至文件首部
+    
+    textformat = ['%d', ' %d', repmat(' %f',1,dim-1)];
+    Table = textscan(fileID,textformat);       % 输出C为1*column的细胞数组，每个数组中存放每列的数据
+    
+    dictA = Table{1,1}(:, 1); 
+    fName = strcat(folder, experiment, '/t.txt');
+    dlmwrite(fName,dictA,'delimiter','\n','newline','pc','precision',6);
+    fprintf('写入 t.txt完成')
+
+    fprintf('theta length(dictA) %f\n', length(dictA));       % 1179876
+    Theta = zeros(length(dictA),dim+1);
+    for d=1:dim+1
+        Theta(:,d) = table2array(Table(:, d));
+    end
+    
+    fclose(fileID);
+    
+%     Theta = importdata(strcat(folder, experiment, '/theta.txt'), ' ');
     fprintf('Calculating synset vectors ... ');
     S = zeros(size(dictS, 1), size(W,2));
     for l=1:size(Theta, 1)
@@ -58,8 +85,27 @@ function [] = writeVectors(varargin)
     end
     
     if (writeLexemes == true)
-    
-        Iota = importdata(strcat(folder, experiment, '/iota.txt'), ' ');
+        
+        fileID2 = fopen(strcat(folder, experiment, '/iota.txt'));  
+        line2 = fgetl(fileID2);       % fgetl从已经打开的文件中读取一行，并且丢掉末尾的换行符。
+        dim2 = length(strfind(line2,' '));
+        fprintf('dim %f\n', dim2);
+
+        frewind(fileID2);      %位置指针移至文件首部
+
+        textformat2 = ['%d', ' %d', repmat(' %f',1,dim2-1)];
+        Table2 = textscan(fileID2,textformat2);       % 输出C为1*column的细胞数组，每个数组中存放每列的数据
+
+        dictA2 = Table2{1,1}(:, 1);       
+        fprintf('iota length(dictA) %f\n', length(dictA2));       % 1179877
+        Iota = zeros(length(dictA2),dim2+1);
+        for d=1:dim2+1
+            Iota(:,d) = table2array(Table(:, d));
+        end
+
+        fclose(fileID);
+        
+%         Iota = importdata(strcat(folder, experiment, '/iota.txt'), ' ');
         Theta = sortrows(Theta, [1 2]);
         Iota = sortrows(Iota, [1 2]);
         
