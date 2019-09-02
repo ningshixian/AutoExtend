@@ -1,20 +1,21 @@
-gene_proteinData：
-	gene_info_processed：基因的数据
-	uniprot_sprot.dat：蛋白质的数据
-	used_synsets.txt：实验用到的synsets
-	synsets.txt：将used_synsets.txt中的id全部换成大写，去重，其中同个id的synset去重后放在一起。将其中的希腊字母转换为英文注音
+gene_proteinData: The file is too large to upload
+Gene_info_processed: The file is too large to upload
+Uniprot_sprot.dat: The file is too large to upload
+
+Used_synsets.txt: Synsets used in the experiment
+Synsets.txt: Replace all the ids in used_synsets.txt with uppercase and deduplicate. The synset of the same id is deduplicated and put together. Convert the Greek letters to English phonetic
 
 
-extractedData：
-	origin:
-		synsets.txt：根据gene_proteinData/synsets.txt里面的id在对应的基因中找基因名和蛋白数据中找蛋白和基因名，输出每行：id+'\t'+'name_1::,name_2::,'+'\n'
+extractedData:
+Origin:
+Synsets.txt: Find the protein and gene name in the corresponding gene in the corresponding gene according to the id in gene_proteinData/synsets.txt, and output each line: id+'\t'+'name_1::,name_2::,' +'\n'
 
-	add：
-		synsets.txt：根据gene_proteinData/synsets.txt里面的id在对应的基因中找基因名和蛋白数据中找蛋白和基因名，找不到id的输出gene_proteinData/synsets.txt里面对应的那行，输出每行：id+'\t'+'name_1::,name_2::,'+'\n'
+Add:
+Synsets.txt: Find the protein and gene name in the corresponding gene in the corresponding gene according to the id in gene_proteinData/synsets.txt, and find the corresponding line in the output gene_proteinData/synsets.txt of the id, and output each line. :id+'\t'+'name_1::,name_2::,'+'\n'
 
-	word_found：
-		synsets.txt：在gene_proteinData/synsets.txt和extractedData/add/synsets.txt里面找按照空格切分后能够在词向量文件中全都找的到的词，按照id输出。其中全都找不到的id，按照gene_proteinData/synsets.txt的对应行输出。
-		lexemes.txt：词素
-		words.txt：将synsets.txt中的切分后全都能找到词向量的求平均输出词和向量，找不到的随机初始化np.random.uniform(-0.1,0.1,200）
+Word_found:
+Synsets.txt: In the gene_proteinData/synsets.txt and extractedData/add/synsets.txt, find the words that can be found in the word vector file according to the space segmentation, and output according to the id. The ids that are not found in all are output according to the corresponding line of gene_proteinData/synsets.txt.
+Lexemes.txt: morpheme
+Words.txt: After splitting in synsets.txt, you can find the average output word and vector of the word vector. Randomly initialized np.random.uniform(-0.1,0.1,200)
 
-跑程序的顺序：synsets.py -> word_found_synsets.py -> lexemes.py -> word.py -> AutoExtend.m
+The order of running programs: synsets.py -> word_found_synsets.py -> lexemes.py -> word.py -> AutoExtend.m
