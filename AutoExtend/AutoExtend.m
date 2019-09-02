@@ -30,8 +30,7 @@ function [] = AutoExtend(varargin)
         
     else
 %         folder = 'F:\B910\AutoExtend-master\WordNetExtract\output\';
-%         folder =  'F:\B910\AutoExtend-master\geneExtract\extracted-mul\';
-        folder = 'E:\proteinInfoExtracter\extractedData\data2\'
+        folder = '..\geneProteinInfoExtracter\data\';
         normalizeWeights = true;
         sWeight = 0.30;
         lWeight = 0.50;
@@ -40,7 +39,7 @@ function [] = AutoExtend(varargin)
         normWhenPossibleED = false;
         endWhenNotED = false;  
         experiment = 'naive';
-        RelationFiles = cell(2,1); % 2x1µÄcell¾ØÕó
+        RelationFiles = cell(2,1); % 2x1ï¿½ï¿½cellï¿½ï¿½ï¿½ï¿½
         RelationFiles{1} = 'similar.txt';
         RelationFiles{2} = 'hypernym.txt';
 %         RelationFiles{1} = 'hypernym.txt';
@@ -85,13 +84,13 @@ function [] = AutoExtend(varargin)
     end
 
     Table = readtable(strcat(folder, 'lexemes.txt'), 'ReadVariableNames', false, 'Delimiter', ' ');
-    ThetaMap = table2array(Table(:, 1:2));    % µÚÒ»ÁÐ+µÚ¶þÁÐ
+    ThetaMap = table2array(Table(:, 1:2));    % ï¿½ï¿½Ò»ï¿½ï¿½+ï¿½Ú¶ï¿½ï¿½ï¿½
     % fprintf('ThetaMap %f\n', ThetaMap(:,1));
-    % S = sparse(i,j,s,m,n,nzmax)  ÓÉi,j,sÈý¸öÏòÁ¿´´½¨Ò»¸öm*nµÄÏ¡Êè¾ØÕóS,²¢ÇÒ×î¶àº¬ÓÐnzmax¸ö·ÇÁãÔªËØ
-    Iota = sparse(ThetaMap(:,1),ThetaMap(:,2),ones(size(ThetaMap,1),1),countWords,countSynsets);    % Êý×éÔ½½ç
+    % S = sparse(i,j,s,m,n,nzmax)  ï¿½ï¿½i,j,sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½m*nï¿½ï¿½Ï¡ï¿½ï¿½ï¿½ï¿½ï¿½S,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½àº¬ï¿½ï¿½nzmaxï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½
+    Iota = sparse(ThetaMap(:,1),ThetaMap(:,2),ones(size(ThetaMap,1),1),countWords,countSynsets);    % ï¿½ï¿½ï¿½ï¿½Ô½ï¿½ï¿½
     fprintf('ThetaMap(:,1) < countWords\n');
     fprintf('ThetaMap(:,2) < countSynsets\n');
-    Theta = Iota';  % ¼ÓÒ»Æ²ÊÇ×ªÖÃ
+    Theta = Iota';  % ï¿½ï¿½Ò»Æ²ï¿½ï¿½×ªï¿½ï¿½
 
     % create relation matrix - will do a squared error of relation pairs
     RelationMap = [];
@@ -137,8 +136,8 @@ function [] = trainModel(folder, dim, num_iters, countSynsets, countWords, W, Th
     lastNormIter = 0;
 
     fprintf('Starting parallel computation on %d dimensions.\n', dim);
-    %NaN£ºÅÐ¶Ï·ÇÊý¡°0/0¡±¡¢¡°¡Þ/¡Þ¡±¡¢¡°0*¡Þ¡±
-    %nnz£º¾ØÕó·ÇÁãÔªËØµÄÊýÁ¿
+    %NaNï¿½ï¿½ï¿½Ð¶Ï·ï¿½ï¿½ï¿½ï¿½ï¿½0/0ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½Þ¡ï¿½ï¿½ï¿½ï¿½ï¿½0*ï¿½Þ¡ï¿½
+    %nnzï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ôªï¿½Øµï¿½ï¿½ï¿½ï¿½ï¿½
     ThetaValues = NaN(nnz(Theta),dim);
     IotaValues = NaN(nnz(Iota),dim);
  
@@ -197,8 +196,8 @@ function [] = trainModel(folder, dim, num_iters, countSynsets, countWords, W, Th
     end
     
     % if still not all values available
-    % isnan ÅÐ¶Ï±äÁ¿ÊÇ·ñÊÇÊý×Ö
-    % any£ºÅÐ¶ÏÔªËØÊÇ·ñÎª·ÇÁãÔªËØ
+    % isnan ï¿½Ð¶Ï±ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    % anyï¿½ï¿½ï¿½Ð¶ï¿½Ôªï¿½ï¿½ï¿½Ç·ï¿½Îªï¿½ï¿½ï¿½ï¿½Ôªï¿½ï¿½
     if (any(isnan(ThetaValues(:))) || any(isnan(IotaValues(:))))
         fprintf('Not all values available (process not master). Process ended.\n');
         return;
@@ -219,7 +218,7 @@ function [] = trainModel(folder, dim, num_iters, countSynsets, countWords, W, Th
     mat1 = [word synset ThetaValues];
     fName = strcat(folder, experiment, '/theta.txt');
     dlmwrite(fName,mat1,'delimiter',' ','newline','pc','precision',6);
-    fprintf('Ð´Èëtheta.txtÍê³É')
+    fprintf('Ð´ï¿½ï¿½theta.txtï¿½ï¿½ï¿½')
     
     % print iota matrix
     [word, synset, ~] = find(Iota);
